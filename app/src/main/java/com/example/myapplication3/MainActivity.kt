@@ -47,6 +47,7 @@ fun AppNavigation(navController: NavHostController, todoItems: MutableList<TodoI
         }
         composable("addTask") {
             AddTaskScreen(
+                navController = navController, // Transmettre le NavController
                 onTaskAdded = { newTask ->
                     todoItems.add(newTask)
                     navController.navigateUp() // Revenir à la liste
