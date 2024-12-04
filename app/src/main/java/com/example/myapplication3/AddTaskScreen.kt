@@ -11,7 +11,7 @@ import androidx.navigation.NavController
 
 @Composable
 fun AddTaskScreen(
-    navController: NavController, // Ajouter le NavController pour gérer la navigation
+    navController: NavController,
     onTaskAdded: (TodoItem) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
@@ -22,7 +22,6 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Champ pour le titre
         TextField(
             value = title,
             onValueChange = { title = it },
@@ -32,7 +31,6 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Champ pour la description
         TextField(
             value = description,
             onValueChange = { description = it },
@@ -42,12 +40,10 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Boutons pour ajouter la tâche et retourner à la liste
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Bouton pour annuler et retourner à la liste sans ajouter de tâche
             Button(
                 onClick = { navController.navigateUp() },
                 modifier = Modifier.weight(1f).padding(end = 8.dp)
@@ -55,7 +51,7 @@ fun AddTaskScreen(
                 Text("Cancel")
             }
 
-            // Bouton pour ajouter la tâche
+
             Button(
                 onClick = {
                     if (title.isNotBlank() && description.isNotBlank()) {
