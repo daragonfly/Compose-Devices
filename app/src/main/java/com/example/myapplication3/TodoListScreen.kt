@@ -38,7 +38,6 @@ fun TodoListScreen(
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Afficher l'image de fond si elle existe
         backgroundImageUri.value?.let {
             AsyncImage(
                 model = it,
