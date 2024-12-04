@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,47 +25,49 @@ import coil.compose.AsyncImage
 fun TodoListScreen(
     navController: NavHostController,
     todoItems: MutableList<TodoItem>,
-    onAddTaskClick: () -> Unit
+    onAddTaskClick: () -> Unit,
+    backgroundImageUri: MutableState<String?> // Recevoir l'URI de l'image ici
 ) {
-    var backgroundImageUri by remember { mutableStateOf<String?>(null) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             if (uri != null) {
-                backgroundImageUri = uri.toString()
+                backgroundImageUri.value = uri.toString() // Mettre à jour l'URI
             }
         }
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Affiche l'image de fond si elle existe
-        if (backgroundImageUri != null) {
+        // Afficher l'image de fond si elle existe
+        backgroundImageUri.value?.let {
             AsyncImage(
-                model = backgroundImageUri,
+                model = it,
                 contentDescription = "Background Image",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
         }
 
+        // Colonne avec le contenu de la liste de tâches
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Text(
                 "Todo List",
                 style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
             )
 
+            // Liste des tâches
             LazyColumn(modifier = Modifier.weight(1f).padding(top = 16.dp)) {
                 items(todoItems.size) { index ->
                     TodoItemCard(
                         todoItem = todoItems[index],
                         onDeleteClick = { taskToDelete ->
-                            todoItems.remove(taskToDelete)
+                            todoItems.remove(taskToDelete)  // Supprimer une tâche de la liste
                         }
                     )
                 }
             }
 
-            // Boutons
+            // Boutons pour ajouter une tâche ou changer l'image de fond
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 Button(onClick = onAddTaskClick) {
                     Text("Add Task")
@@ -72,7 +75,7 @@ fun TodoListScreen(
 
                 Button(
                     onClick = {
-                        // Lance le sélecteur d'image
+                        // Lancer le sélecteur d'image pour choisir une nouvelle image de fond
                         launcher.launch("image/*")
                     }
                 ) {
@@ -83,11 +86,10 @@ fun TodoListScreen(
     }
 }
 
-
 @Composable
 fun TodoItemCard(
     todoItem: TodoItem,
-    onDeleteClick: (TodoItem) -> Unit // Accepter le paramètre pour la suppression
+    onDeleteClick: (TodoItem) -> Unit  // Fonction pour supprimer la tâche
 ) {
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -101,15 +103,10 @@ fun TodoItemCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = { onDeleteClick(todoItem) }, // Appel de la fonction pour supprimer la tâche
+            onClick = { onDeleteClick(todoItem) },  // Appeler la fonction de suppression
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Delete Task")
         }
     }
 }
-
-
-
-
-

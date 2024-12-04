@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -22,15 +24,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TodoListAppTheme {
-                // Configure le navController
                 val navController = rememberNavController()
                 val todoItems = remember { mutableStateListOf<TodoItem>() }
+
+                // Stockage de l'URI de l'image de fond à un niveau supérieur
+                val backgroundImageUri = remember { mutableStateOf<String?>(null) }
 
                 Surface(
                     modifier = Modifier.padding(16.dp),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(navController, todoItems)
+                    AppNavigation(
+                        navController = navController,
+                        todoItems = todoItems,
+                        backgroundImageUri = backgroundImageUri // Transmettre l'URI ici
+                    )
                 }
             }
         }
@@ -38,15 +46,20 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController, todoItems: MutableList<TodoItem>) {
+fun AppNavigation(
+    navController: NavHostController,
+    todoItems: MutableList<TodoItem>,
+    backgroundImageUri: MutableState<String?> // Accepter l'URI ici
+) {
     NavHost(navController = navController, startDestination = "todoList") {
         composable("todoList") {
             TodoListScreen(
-                navController = navController,  // Passer le navController ici
+                navController = navController,
                 todoItems = todoItems,
                 onAddTaskClick = {
                     navController.navigate("addTask")
-                }
+                },
+                backgroundImageUri = backgroundImageUri // Passer l'URI ici
             )
         }
         composable("addTask") {
@@ -54,11 +67,9 @@ fun AppNavigation(navController: NavHostController, todoItems: MutableList<TodoI
                 navController = navController,
                 onTaskAdded = { newTask ->
                     todoItems.add(newTask)
-                    navController.navigateUp()  // Revenir à la liste
+                    navController.navigateUp()
                 }
             )
         }
     }
 }
-
-
