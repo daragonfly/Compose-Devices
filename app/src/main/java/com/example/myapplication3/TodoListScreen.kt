@@ -66,7 +66,6 @@ fun TodoListScreen(
                 }
             }
 
-            // Boutons pour ajouter une tâche ou changer l'image de fond
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 Button(onClick = onAddTaskClick) {
                     Text("Add Task")
@@ -74,16 +73,27 @@ fun TodoListScreen(
 
                 Button(
                     onClick = {
-                        // Lancer le sélecteur d'image pour choisir une nouvelle image de fond
+                        // Lance le sélecteur d'image
                         launcher.launch("image/*")
                     }
                 ) {
                     Text("Set Background")
                 }
+
+                Button(
+                    onClick = {
+                        // Sauvegarder les tâches via WorkManager
+                        saveTodoItemsWithWorkManager(navController.context, todoItems)
+                    }
+                ) {
+                    Text("Save Tasks")
+                }
             }
+
         }
     }
 }
+
 
 @Composable
 fun TodoItemCard(

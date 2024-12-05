@@ -10,7 +10,7 @@ import java.io.ObjectOutputStream
 class TodoWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
     override fun doWork(): Result {
         return try {
-            // Récupérer les tâches à partir de l'inputData
+            // Récupérer les tâches à partir des données envoyées
             val todoItemsData = inputData.getStringArray("todoItems") ?: emptyArray()
 
             // Sauvegarde des tâches dans un fichier

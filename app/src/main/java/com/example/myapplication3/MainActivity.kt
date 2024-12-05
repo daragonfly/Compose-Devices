@@ -1,5 +1,6 @@
 package com.example.myapplication3
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication3.ui.theme.TodoListAppTheme
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,3 +77,19 @@ fun AppNavigation(
         }
     }
 }
+
+
+// Fonction pour sauvegarder les tâches via WorkManager
+fun saveTodoItemsWithWorkManager(context: Context, todoItems: List<TodoItem>) {
+    // Convertir la liste de tâches en tableau nullable
+    val todoItemsData = todoItems.map { it.title as String? }.toTypedArray()
+
+    // Créer une requête de travail unique
+    val workRequest = OneTimeWorkRequestBuilder<TodoWorker>()
+        .setInputData(workDataOf("todoItems" to todoItemsData))
+        .build()
+
+    // Planifier la requête avec WorkManager
+    WorkManager.getInstance(context).enqueue(workRequest)
+}
+
