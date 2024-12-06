@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -34,17 +32,13 @@ class MainActivity : ComponentActivity() {
                 val savedTodoItems = TodoWorker.loadTodoItems(this)
                 val todoItems = remember { mutableStateListOf<TodoItem>().apply { addAll(savedTodoItems) } }
 
-                // Stockage de l'URI de l'image de fond à un niveau supérieur
-                val backgroundImageUri = remember { mutableStateOf<String?>(null) }
-
                 Surface(
                     modifier = Modifier.padding(16.dp),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     AppNavigation(
                         navController = navController,
-                        todoItems = todoItems,
-                        backgroundImageUri = backgroundImageUri // Transmettre l'URI ici
+                        todoItems = todoItems
                     )
                 }
             }
@@ -56,8 +50,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation(
     navController: NavHostController,
-    todoItems: MutableList<TodoItem>,
-    backgroundImageUri: MutableState<String?> // Ajouter cet argument
+    todoItems: MutableList<TodoItem>
 ) {
     NavHost(navController = navController, startDestination = "todoList") {
         composable("todoList") {
@@ -66,8 +59,7 @@ fun AppNavigation(
                 todoItems = todoItems,
                 onAddTaskClick = {
                     navController.navigate("addTask")
-                },
-                backgroundImageUri = backgroundImageUri // Transmettre l'URI ici
+                }
             )
         }
         composable("addTask") {
@@ -75,7 +67,7 @@ fun AppNavigation(
                 navController = navController,
                 onTaskAdded = { newTask ->
                     todoItems.add(newTask)
-                    saveTodoItemsWithWorkManager(navController.context, todoItems) // Sauvegarder ici
+                    saveTodoItemsWithWorkManager(navController.context, todoItems)
                     navController.navigateUp()
                 }
             )
@@ -84,18 +76,13 @@ fun AppNavigation(
 }
 
 
-
 // Fonction pour sauvegarder les tâches via WorkManager
 fun saveTodoItemsWithWorkManager(context: Context, todoItems: List<TodoItem>) {
-    // Convertir la liste de tâches en tableau nullable
     val todoItemsData = todoItems.map { it.title as String? }.toTypedArray()
 
-    // Créer une requête de travail unique
     val workRequest = OneTimeWorkRequestBuilder<TodoWorker>()
         .setInputData(workDataOf("todoItems" to todoItemsData))
         .build()
 
-    // Planifier la requête avec WorkManager
     WorkManager.getInstance(context).enqueue(workRequest)
 }
-

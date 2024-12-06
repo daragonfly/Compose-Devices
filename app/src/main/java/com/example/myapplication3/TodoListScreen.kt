@@ -26,37 +26,9 @@ import coil.compose.AsyncImage
 fun TodoListScreen(
     navController: NavHostController,
     todoItems: MutableList<TodoItem>,
-    onAddTaskClick: () -> Unit,
-    backgroundImageUri: MutableState<String?> // Recevoir l'URI de l'image ici
+    onAddTaskClick: () -> Unit
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri ->
-            if (uri != null) {
-                backgroundImageUri.value = uri.toString() // Mettre à jour l'URI
-                saveBackgroundUri(navController.context, uri.toString()) // Sauvegarder l'URI
-            }
-        }
-    )
-
-    // Charger l'URI de l'image sauvegardée (si pas déjà défini)
-    LaunchedEffect(Unit) {
-        if (backgroundImageUri.value == null) {
-            backgroundImageUri.value = loadBackgroundUri(navController.context)
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
-        // Affiche l'image de fond si elle existe
-        backgroundImageUri.value?.let {
-            AsyncImage(
-                model = it,
-                contentDescription = "Background Image",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
-
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Text(
                 "Todo List",
@@ -69,7 +41,7 @@ fun TodoListScreen(
                     TodoItemCard(
                         todoItem = todoItems[index],
                         onDeleteClick = { taskToDelete ->
-                            todoItems.remove(taskToDelete) // Supprimer une tâche de la liste
+                            todoItems.remove(taskToDelete)
                             saveTodoItemsWithWorkManager(navController.context, todoItems)
                         }
                     )
@@ -79,14 +51,6 @@ fun TodoListScreen(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 Button(onClick = onAddTaskClick) {
                     Text("Add Task")
-                }
-
-                Button(
-                    onClick = {
-                        launcher.launch("image/*") // Sélectionner une nouvelle image de fond
-                    }
-                ) {
-                    Text("Set Background")
                 }
 
                 Button(
@@ -101,7 +65,6 @@ fun TodoListScreen(
         }
     }
 }
-
 
 
 @Composable
