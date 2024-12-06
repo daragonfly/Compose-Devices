@@ -20,6 +20,7 @@ import com.example.myapplication3.ui.theme.TodoListAppTheme
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +29,7 @@ class MainActivity : ComponentActivity() {
             TodoListAppTheme {
                 val navController = rememberNavController()
 
-                // Charge les tâches sauvegardées
+
                 val savedTodoItems = TodoWorker.loadTodoItems(this)
                 val todoItems = remember { mutableStateListOf<TodoItem>().apply { addAll(savedTodoItems) } }
 
@@ -75,13 +76,14 @@ fun AppNavigation(
     }
 }
 
-
-
 fun saveTodoItemsWithWorkManager(context: Context, todoItems: List<TodoItem>) {
-    val todoItemsData = todoItems.map { it.title as String? }.toTypedArray()
+    val gson = Gson()
+    val todoItemsJson = gson.toJson(todoItems)
+
+    val workData = workDataOf("todoItems" to todoItemsJson)
 
     val workRequest = OneTimeWorkRequestBuilder<TodoWorker>()
-        .setInputData(workDataOf("todoItems" to todoItemsData))
+        .setInputData(workData)
         .build()
 
     WorkManager.getInstance(context).enqueue(workRequest)

@@ -89,5 +89,9 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.compose.v240)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.gson)
+    implementation (libs.gson.v288)
+    implementation(libs.gson)
+
 
 }
