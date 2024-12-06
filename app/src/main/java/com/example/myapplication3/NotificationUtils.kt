@@ -1,11 +1,16 @@
 package com.example.myapplication3
 
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 
 object NotificationUtils {
 
@@ -29,16 +34,27 @@ object NotificationUtils {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun showNotification(context: Context, title: String, description: String) {
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Remplacez par une icône adaptée
-            .setContentTitle(title)
-            .setContentText(description)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setOngoing(true) // Permet de rendre la notification persistante
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED) {
 
-        with(NotificationManagerCompat.from(context)) {
-            notify(1, builder.build())
+            ActivityCompat.requestPermissions(
+                context as Activity,
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                1
+            )
+        } else {
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(title)
+                .setContentText(description)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setOngoing(true)
+
+            with(NotificationManagerCompat.from(context)) {
+                notify(1, builder.build())
+            }
         }
     }
 }
