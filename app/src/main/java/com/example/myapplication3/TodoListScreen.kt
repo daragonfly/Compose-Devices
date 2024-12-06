@@ -1,7 +1,5 @@
 package com.example.myapplication3
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
@@ -12,13 +10,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
 
 @Composable
 fun TodoListScreen(
@@ -26,60 +26,49 @@ fun TodoListScreen(
     todoItems: MutableList<TodoItem>,
     onAddTaskClick: () -> Unit
 ) {
-    var backgroundImageUri by remember { mutableStateOf<String?>(null) }
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri ->
-            if (uri != null) {
-                backgroundImageUri = uri.toString()
-            }
-        }
-    )
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Affiche l'image de fond si elle existe
-        if (backgroundImageUri != null) {
-            AsyncImage(
-                model = backgroundImageUri,
-                contentDescription = "Background Image",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showSnackbar by remember { mutableStateOf(false) }
+    LaunchedEffect(showSnackbar) {
+        if (showSnackbar) {
+            snackbarHostState.showSnackbar(
+                message = "Tâche sauvegardée avec succès",
+                duration = SnackbarDuration.Short
             )
         }
+    }
 
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Text(
                 "Todo List",
-                style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium
             )
-
             LazyColumn(modifier = Modifier.weight(1f).padding(top = 16.dp)) {
                 items(todoItems.size) { index ->
                     TodoItemCard(
                         todoItem = todoItems[index],
                         onDeleteClick = { taskToDelete ->
                             todoItems.remove(taskToDelete)
+                            saveTodoItemsWithWorkManager(navController.context, todoItems)
                         }
                     )
                 }
             }
 
-            // Boutons
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 Button(onClick = onAddTaskClick) {
                     Text("Add Task")
                 }
-
-                Button(
-                    onClick = {
-                        // Lance le sélecteur d'image
-                        launcher.launch("image/*")
-                    }
-                ) {
-                    Text("Set Background")
-                }
             }
         }
+
+
+        SnackbarHost(hostState = snackbarHostState)
+    }
+
+    LaunchedEffect(todoItems) {
+        saveTodoItemsWithWorkManager(navController.context, todoItems)
+        showSnackbar = true
     }
 }
 
@@ -87,7 +76,7 @@ fun TodoListScreen(
 @Composable
 fun TodoItemCard(
     todoItem: TodoItem,
-    onDeleteClick: (TodoItem) -> Unit // Accepter le paramètre pour la suppression
+    onDeleteClick: (TodoItem) -> Unit
 ) {
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -101,15 +90,10 @@ fun TodoItemCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = { onDeleteClick(todoItem) }, // Appel de la fonction pour supprimer la tâche
+            onClick = { onDeleteClick(todoItem) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Delete Task")
         }
     }
 }
-
-
-
-
-
