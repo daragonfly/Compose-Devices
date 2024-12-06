@@ -21,6 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 
 @Composable
 fun TodoListScreen(
@@ -28,11 +32,24 @@ fun TodoListScreen(
     todoItems: MutableList<TodoItem>,
     onAddTaskClick: () -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showSnackbar by remember { mutableStateOf(false) }
+
+    // Fonction pour afficher le Snackbar, seulement après la sauvegarde
+    LaunchedEffect(showSnackbar) {
+        if (showSnackbar) {
+            snackbarHostState.showSnackbar(
+                message = "Tâche sauvegardée avec succès",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Text(
                 "Todo List",
-                style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium
             )
 
             // Liste des tâches
@@ -52,25 +69,24 @@ fun TodoListScreen(
                 Button(onClick = onAddTaskClick) {
                     Text("Add Task")
                 }
-
-                Button(
-                    onClick = {
-                        // Sauvegarder les tâches via WorkManager
-                        saveTodoItemsWithWorkManager(navController.context, todoItems)
-                    }
-                ) {
-                    Text("Save Tasks")
-                }
             }
         }
+
+        // Afficher le Snackbar en bas de l'écran
+        SnackbarHost(hostState = snackbarHostState)
+    }
+
+    // Sauvegarder les tâches après chaque ajout
+    LaunchedEffect(todoItems) {
+        saveTodoItemsWithWorkManager(navController.context, todoItems)
+        showSnackbar = true
     }
 }
-
 
 @Composable
 fun TodoItemCard(
     todoItem: TodoItem,
-    onDeleteClick: (TodoItem) -> Unit  // Fonction pour supprimer la tâche
+    onDeleteClick: (TodoItem) -> Unit
 ) {
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -84,10 +100,11 @@ fun TodoItemCard(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = { onDeleteClick(todoItem) },  // Appeler la fonction de suppression
+            onClick = { onDeleteClick(todoItem) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Delete Task")
         }
     }
 }
+

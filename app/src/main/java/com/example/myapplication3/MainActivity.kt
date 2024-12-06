@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
             TodoListAppTheme {
                 val navController = rememberNavController()
 
-                // Charger les tâches sauvegardées
+                // Charge les tâches sauvegardées
                 val savedTodoItems = TodoWorker.loadTodoItems(this)
                 val todoItems = remember { mutableStateListOf<TodoItem>().apply { addAll(savedTodoItems) } }
 
@@ -76,7 +76,7 @@ fun AppNavigation(
 }
 
 
-// Fonction pour sauvegarder les tâches via WorkManager
+
 fun saveTodoItemsWithWorkManager(context: Context, todoItems: List<TodoItem>) {
     val todoItemsData = todoItems.map { it.title as String? }.toTypedArray()
 
