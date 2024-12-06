@@ -1,5 +1,7 @@
 package com.example.myapplication3
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -9,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AddTaskScreen(
     navController: NavController,
@@ -57,13 +60,12 @@ fun AddTaskScreen(
                     if (title.isNotBlank() && description.isNotBlank()) {
                         val newTask = TodoItem(title, description)
                         onTaskAdded(newTask)
-                        // Envoyer une notification persistante
                         NotificationUtils.showNotification(
                             context = navController.context,
                             title = "Task Added",
                             description = "First Task: ${newTask.title}"
                         )
-                        navController.navigateUp() // Revenir à la liste après ajout
+                        navController.navigateUp()
                     }
                 },
                 modifier = Modifier.weight(1f).padding(start = 8.dp)
