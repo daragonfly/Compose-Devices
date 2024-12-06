@@ -29,7 +29,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             TodoListAppTheme {
                 val navController = rememberNavController()
-                val todoItems = remember { mutableStateListOf<TodoItem>() }
+
+                // Charger les tâches sauvegardées
+                val savedTodoItems = TodoWorker.loadTodoItems(this)
+                val todoItems = remember { mutableStateListOf<TodoItem>().apply { addAll(savedTodoItems) } }
 
                 // Stockage de l'URI de l'image de fond à un niveau supérieur
                 val backgroundImageUri = remember { mutableStateOf<String?>(null) }
@@ -49,11 +52,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun AppNavigation(
     navController: NavHostController,
     todoItems: MutableList<TodoItem>,
-    backgroundImageUri: MutableState<String?> // Accepter l'URI ici
+    backgroundImageUri: MutableState<String?> // Ajouter cet argument
 ) {
     NavHost(navController = navController, startDestination = "todoList") {
         composable("todoList") {
@@ -63,7 +67,7 @@ fun AppNavigation(
                 onAddTaskClick = {
                     navController.navigate("addTask")
                 },
-                backgroundImageUri = backgroundImageUri // Passer l'URI ici
+                backgroundImageUri = backgroundImageUri // Transmettre l'URI ici
             )
         }
         composable("addTask") {
@@ -71,12 +75,14 @@ fun AppNavigation(
                 navController = navController,
                 onTaskAdded = { newTask ->
                     todoItems.add(newTask)
+                    saveTodoItemsWithWorkManager(navController.context, todoItems) // Sauvegarder ici
                     navController.navigateUp()
                 }
             )
         }
     }
 }
+
 
 
 // Fonction pour sauvegarder les tâches via WorkManager

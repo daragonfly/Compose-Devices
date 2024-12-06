@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,11 +34,20 @@ fun TodoListScreen(
         onResult = { uri ->
             if (uri != null) {
                 backgroundImageUri.value = uri.toString() // Mettre à jour l'URI
+                saveBackgroundUri(navController.context, uri.toString()) // Sauvegarder l'URI
             }
         }
     )
 
+    // Charger l'URI de l'image sauvegardée (si pas déjà défini)
+    LaunchedEffect(Unit) {
+        if (backgroundImageUri.value == null) {
+            backgroundImageUri.value = loadBackgroundUri(navController.context)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
+        // Affiche l'image de fond si elle existe
         backgroundImageUri.value?.let {
             AsyncImage(
                 model = it,
@@ -47,7 +57,6 @@ fun TodoListScreen(
             )
         }
 
-        // Colonne avec le contenu de la liste de tâches
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Text(
                 "Todo List",
@@ -60,7 +69,8 @@ fun TodoListScreen(
                     TodoItemCard(
                         todoItem = todoItems[index],
                         onDeleteClick = { taskToDelete ->
-                            todoItems.remove(taskToDelete)  // Supprimer une tâche de la liste
+                            todoItems.remove(taskToDelete) // Supprimer une tâche de la liste
+                            saveTodoItemsWithWorkManager(navController.context, todoItems)
                         }
                     )
                 }
@@ -73,8 +83,7 @@ fun TodoListScreen(
 
                 Button(
                     onClick = {
-                        // Lance le sélecteur d'image
-                        launcher.launch("image/*")
+                        launcher.launch("image/*") // Sélectionner une nouvelle image de fond
                     }
                 ) {
                     Text("Set Background")
@@ -89,10 +98,10 @@ fun TodoListScreen(
                     Text("Save Tasks")
                 }
             }
-
         }
     }
 }
+
 
 
 @Composable

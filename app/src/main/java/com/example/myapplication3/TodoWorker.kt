@@ -4,26 +4,39 @@ import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import java.io.File
-import java.io.FileOutputStream
+import java.io.FileInputStream
+import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
 class TodoWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
     override fun doWork(): Result {
         return try {
-            // Récupérer les tâches à partir des données envoyées
             val todoItemsData = inputData.getStringArray("todoItems") ?: emptyArray()
 
-            // Sauvegarde des tâches dans un fichier
             val file = File(applicationContext.filesDir, "todoItems.dat")
-            ObjectOutputStream(FileOutputStream(file)).use { outputStream ->
+            ObjectOutputStream(file.outputStream()).use { outputStream ->
                 outputStream.writeObject(todoItemsData)
             }
 
-            // Indiquer que le travail a été effectué avec succès
             Result.success()
         } catch (e: Exception) {
-            // En cas d'échec, retourner un échec
             Result.failure()
+        }
+    }
+
+    companion object {
+        fun loadTodoItems(context: Context): List<TodoItem> {
+            val file = File(context.filesDir, "todoItems.dat")
+            if (!file.exists()) return emptyList()
+
+            return try {
+                ObjectInputStream(FileInputStream(file)).use { inputStream ->
+                    val todoItemsData = inputStream.readObject() as Array<String?>
+                    todoItemsData.mapNotNull { title -> TodoItem(title ?: "", "No description") }
+                }
+            } catch (e: Exception) {
+                emptyList()
+            }
         }
     }
 }

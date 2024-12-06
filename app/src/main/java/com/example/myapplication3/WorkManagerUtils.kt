@@ -6,16 +6,21 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import android.content.SharedPreferences
 
-object WorkManagerUtils {
-    fun saveTodoItems(context: Context, todoItems: List<TodoItem>) {
-        val todoItems = todoItems.map { it.title as String? }.toTypedArray()
 
-        val workRequest = OneTimeWorkRequestBuilder<TodoWorker>()
-            .setInputData(workDataOf("todoItems" to todoItems))
-            .build()
+private const val PREFS_NAME = "todo_app_prefs"
+private const val KEY_BACKGROUND_URI = "background_uri"
 
-        WorkManager.getInstance(context).enqueue(workRequest)
-
-    }
+// Sauvegarde l'URI de l'image de fond dans SharedPreferences
+fun saveBackgroundUri(context: Context, uri: String) {
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    sharedPreferences.edit().putString(KEY_BACKGROUND_URI, uri).apply()
 }
+
+// Charge l'URI de l'image de fond depuis SharedPreferences
+fun loadBackgroundUri(context: Context): String? {
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    return sharedPreferences.getString(KEY_BACKGROUND_URI, null)
+}
+
