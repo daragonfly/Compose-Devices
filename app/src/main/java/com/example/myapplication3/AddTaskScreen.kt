@@ -55,7 +55,14 @@ fun AddTaskScreen(
             Button(
                 onClick = {
                     if (title.isNotBlank() && description.isNotBlank()) {
-                        onTaskAdded(TodoItem(title, description))
+                        val newTask = TodoItem(title, description)
+                        onTaskAdded(newTask)
+                        // Envoyer une notification persistante
+                        NotificationUtils.showNotification(
+                            context = navController.context,
+                            title = "Task Added",
+                            description = "First Task: ${newTask.title}"
+                        )
                         navController.navigateUp() // Revenir à la liste après ajout
                     }
                 },
